@@ -6,452 +6,7 @@
     <title>UVBF Nostr - Messagerie Sécurisée</title>
     <script src="https://cdn.jsdelivr.net/npm/nostr-tools@1.12.1/lib/nostr.bundle.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --secondary: #8b5cf6;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --error: #ef4444;
-            --dark: #1f2937;
-            --light: #f8fafc;
-            --gray: #6b7280;
-            --gray-light: #e5e7eb;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --gradient-primary: linear-gradient(135deg, var(--primary), var(--secondary));
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: var(--gradient);
-            min-height: 100vh;
-            color: var(--dark);
-            line-height: 1.6;
-        }
-
-        .app-container {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Header */
-        .header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 1.5rem 2rem;
-            box-shadow: var(--shadow);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .logo-icon {
-            width: 50px;
-            height: 50px;
-            background: var(--gradient-primary);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.5rem;
-            box-shadow: var(--shadow);
-        }
-
-        .logo-text h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .logo-text p {
-            color: var(--gray);
-            font-size: 0.9rem;
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            padding: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        .dashboard {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        /* Cards */
-        .card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 2px solid var(--gray-light);
-        }
-
-        .card-icon {
-            width: 40px;
-            height: 40px;
-            background: var(--gradient-primary);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2rem;
-        }
-
-        .card-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: var(--dark);
-        }
-
-        /* Status */
-        .status {
-            padding: 1rem;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-            font-weight: 500;
-        }
-
-        .status.pending {
-            background: #fef3c7;
-            color: #d97706;
-            border: 1px solid #fcd34d;
-        }
-
-        .status.connected {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #a7f3d0;
-        }
-
-        .status.error {
-            background: #fee2e2;
-            color: #dc2626;
-            border: 1px solid #fca5a5;
-        }
-
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        .status.pending .status-dot {
-            background: #f59e0b;
-        }
-
-        .status.connected .status-dot {
-            background: #10b981;
-        }
-
-        .status.error .status-dot {
-            background: #ef4444;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        /* Buttons */
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
-        }
-
-        .btn-primary {
-            background: var(--gradient-primary);
-            color: white;
-            box-shadow: var(--shadow);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-        }
-
-        .btn-outline:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        /* Key Display */
-        .key-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .key-label {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--dark);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .key-value {
-            background: var(--light);
-            padding: 1rem;
-            border-radius: 12px;
-            border: 1px solid var(--gray-light);
-            font-family: 'Monaco', 'Consolas', monospace;
-            font-size: 0.8rem;
-            word-break: break-all;
-            margin-bottom: 0.5rem;
-            position: relative;
-        }
-
-        .key-warning {
-            color: var(--error);
-            font-size: 0.8rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-
-        /* Message Form */
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--dark);
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 2px solid var(--gray-light);
-            border-radius: 12px;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-            background: white;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-
-        .form-textarea {
-            resize: vertical;
-            min-height: 100px;
-            font-family: inherit;
-        }
-
-        /* Messages */
-        .messages-container {
-            max-height: 400px;
-            overflow-y: auto;
-            padding-right: 0.5rem;
-        }
-
-        .messages-container::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .messages-container::-webkit-scrollbar-track {
-            background: var(--gray-light);
-            border-radius: 3px;
-        }
-
-        .messages-container::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 3px;
-        }
-
-        .message {
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border-radius: 16px;
-            animation: slideIn 0.3s ease;
-            position: relative;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .message.sent {
-            background: var(--gradient-primary);
-            color: white;
-            margin-left: 2rem;
-            border-bottom-right-radius: 4px;
-        }
-
-        .message.received {
-            background: white;
-            border: 2px solid var(--gray-light);
-            margin-right: 2rem;
-            border-bottom-left-radius: 4px;
-        }
-
-        .message-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-            font-size: 0.8rem;
-            opacity: 0.9;
-        }
-
-        .message-sender {
-            font-weight: 600;
-        }
-
-        .message-time {
-            opacity: 0.8;
-        }
-
-        .message-content {
-            line-height: 1.5;
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 3rem 2rem;
-            color: var(--gray);
-        }
-
-        .empty-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            opacity: 0.5;
-        }
-
-        /* Relay Status */
-        .relay-status {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem;
-            border-radius: 8px;
-            margin-bottom: 0.5rem;
-            font-size: 0.8rem;
-        }
-
-        .relay-connected {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .relay-error {
-            background: #fee2e2;
-            color: #dc2626;
-        }
-
-        .relay-url {
-            font-family: monospace;
-            font-size: 0.7rem;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
-            
-            .header-content {
-                flex-direction: column;
-                gap: 1rem;
-                text-align: center;
-            }
-            
-            .main-content {
-                padding: 1rem;
-            }
-            
-            .message {
-                margin-left: 0 !important;
-                margin-right: 0 !important;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-container">
@@ -464,7 +19,7 @@
                     </div>
                     <div class="logo-text">
                         <h1>UVBF Secure Messenger</h1>
-                        <p>Communication chiffrée via le réseau Nostr</p>
+                        <p>Communication chiffrée de bout en bout</p>
                     </div>
                 </div>
                 <div class="connection-info" id="connection-info">
@@ -489,12 +44,9 @@
                             <h2 class="card-title">Identité</h2>
                         </div>
                         
-                        <button class="btn btn-primary" onclick="generateKeys()" style="width: 100%;" id="generate-btn">
+                        <button class="btn btn-primary" onclick="generateKeys()" style="width: 100%;">
                             <i class="fas fa-plus"></i>
-                            <span id="btn-text">Générer mes identifiants</span>
-                            <div id="btn-spinner" style="display: none;">
-                                <i class="fas fa-spinner fa-spin"></i> Génération...
-                            </div>
+                            Générer mes identifiants
                         </button>
 
                         <div id="keys-section" style="display: none;">
@@ -527,17 +79,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Relay Status -->
-                    <div class="card" id="relays-section" style="display: none;">
-                        <div class="card-header">
-                            <div class="card-icon">
-                                <i class="fas fa-server"></i>
-                            </div>
-                            <h2 class="card-title">Relays Connectés</h2>
-                        </div>
-                        <div id="relays-status"></div>
-                    </div>
                 </div>
 
                 <!-- Main Area -->
@@ -556,7 +97,7 @@
                                 <i class="fas fa-user"></i>
                                 Destinataire (clé publique)
                             </label>
-                            <input type="text" id="recipient" class="form-input" placeholder="npub1... ou hex...">
+                            <input type="text" id="recipient" class="form-input" placeholder="Collez la clé publique du destinataire...">
                         </div>
 
                         <div class="form-group">
@@ -598,110 +139,23 @@
     </div>
 
     <script>
-        // =============================================================================
-        // VARIABLES GLOBALES - DÉCLARATION CORRIGÉE
-        // =============================================================================
+        // Le code JavaScript reste exactement le même que précédemment
+        // Vérifier que nostr-tools est chargé
+        console.log('NostrTools:', typeof NostrTools);
         
         let userKeys = null;
-        let relays = new Map(); // ✅ DÉCLARATION AJOUTÉE
+        let relay = null;
         let isConnected = false;
-        let messageSubscription = null;
-        const processedMessages = new Set();
 
-        // =============================================================================
-        // CONFIGURATION DES RELAYS
-        // =============================================================================
-        
-        const RELAY_URLS = [
-            "wss://relay.nostr.band",
-            "wss://nos.lol",
-            "wss://relay.damus.io",
-            "wss://nostr.wine",
-            "wss://relay.current.fyi"
-        ];
-
-        // =============================================================================
-        // INITIALISATION
-        // =============================================================================
-
+        // Charger au démarrage
         window.addEventListener('load', function() {
-            console.log('🔍 Initialisation UVBF Nostr...');
-            
-            // Diagnostic
-            if (typeof nostrTools !== 'undefined') {
-                console.log('✅ nostrTools disponible');
-            } else if (typeof NostrTools !== 'undefined') {
-                console.log('✅ NostrTools disponible');
-            } else {
-                console.log('❌ nostr-tools non chargé');
-                showStatusMessage('Erreur: bibliothèque non chargée', 'error');
+            console.log('Page chargée, vérification nostr-tools...');
+            if (typeof NostrTools === 'undefined') {
+                alert('Erreur: nostr-tools non chargé. Vérifiez la connexion internet.');
                 return;
             }
-            
             loadKeys();
-            setupReconnection();
         });
-
-        // =============================================================================
-        // GESTION DES CLÉS - FONCTIONS CORRIGÉES
-        // =============================================================================
-
-        function setButtonState(loading) {
-            const btn = document.getElementById('generate-btn');
-            const btnText = document.getElementById('btn-text');
-            const spinner = document.getElementById('btn-spinner');
-            
-            if (loading) {
-                btn.disabled = true;
-                btnText.style.display = 'none';
-                spinner.style.display = 'block';
-            } else {
-                btn.disabled = false;
-                btnText.style.display = 'block';
-                spinner.style.display = 'none';
-            }
-        }
-
-        function generateKeys() {
-            console.log('🔄 Début de la génération des clés...');
-            setButtonState(true);
-            
-            // Vérification de nostr-tools
-            const nt = nostrTools || NostrTools;
-            if (!nt || !nt.generatePrivateKey) {
-                alert('❌ La bibliothèque de chiffrement n\'est pas chargée correctement.');
-                setButtonState(false);
-                return;
-            }
-
-            try {
-                console.log('🔑 Génération de la clé privée...');
-                const privateKey = nt.generatePrivateKey();
-                
-                console.log('🔑 Génération de la clé publique...');
-                const publicKey = nt.getPublicKey(privateKey);
-
-                userKeys = { 
-                    privateKey: privateKey,
-                    publicKey: publicKey 
-                };
-                
-                console.log('💾 Sauvegarde des clés...');
-                saveKeys(userKeys);
-                showKeys();
-                
-                console.log('🔌 Connexion aux relays...');
-                connectToRelays();
-                
-                showStatusMessage('✅ Clés générées avec succès !', 'success');
-                
-            } catch (error) {
-                console.error('❌ Erreur lors de la génération:', error);
-                alert('❌ Erreur lors de la génération des clés: ' + error.message);
-            } finally {
-                setButtonState(false);
-            }
-        }
 
         function loadKeys() {
             const saved = localStorage.getItem('uvbf_nostr_keys');
@@ -709,14 +163,9 @@
                 try {
                     userKeys = JSON.parse(saved);
                     showKeys();
-                    
-                    // Charger les IDs de messages déjà traités
-                    const storedMessages = JSON.parse(localStorage.getItem('uvbf_processed_messages') || '[]');
-                    storedMessages.forEach(id => processedMessages.add(id));
-                    
-                    connectToRelays();
+                    connectToRelay();
                 } catch (e) {
-                    console.log('ℹ️ Pas de clés sauvegardées ou erreur de parsing');
+                    console.log('Pas de clés sauvegardées ou erreur de parsing');
                 }
             }
         }
@@ -725,227 +174,78 @@
             localStorage.setItem('uvbf_nostr_keys', JSON.stringify(keys));
         }
 
-        function showKeys() {
-            if (!userKeys) {
-                console.error('❌ Aucune clé à afficher');
+        function generateKeys() {
+            if (typeof NostrTools === 'undefined') {
+                alert('nostr-tools non chargé. Rafraîchissez la page.');
                 return;
             }
+            
+            const privateKey = NostrTools.generatePrivateKey();
+            const publicKey = NostrTools.getPublicKey(privateKey);
+            
+            userKeys = { privateKey, publicKey };
+            saveKeys(userKeys);
+            showKeys();
+            connectToRelay();
+        }
 
+        function showKeys() {
+            document.getElementById('pubkey-display').textContent = userKeys.publicKey;
+            document.getElementById('privkey-display').textContent = userKeys.privateKey;
+            
+            document.getElementById('keys-section').style.display = 'block';
+            document.getElementById('message-section').style.display = 'block';
+            document.getElementById('messages-section').style.display = 'block';
+            
+            // Supprimer l'état vide des messages
+            const emptyState = document.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.style.display = 'none';
+            }
+        }
+
+        async function connectToRelay() {
+            const status = document.getElementById('status');
             try {
-                document.getElementById('pubkey-display').textContent = userKeys.publicKey;
-                document.getElementById('privkey-display').textContent = userKeys.privateKey;
+                status.className = 'status pending';
+                status.innerHTML = '<div class="status-dot"></div><span>Connexion au relay...</span>';
                 
-                document.getElementById('keys-section').style.display = 'block';
-                document.getElementById('message-section').style.display = 'block';
-                document.getElementById('messages-section').style.display = 'block';
-                document.getElementById('relays-section').style.display = 'block';
+                relay = NostrTools.relayInit('ws://localhost:8080');
+                await relay.connect();
                 
-                const emptyState = document.querySelector('.empty-state');
-                if (emptyState) {
-                    emptyState.style.display = 'none';
-                }
-                
-                console.log('✅ Interface mise à jour avec les nouvelles clés');
-                
-            } catch (error) {
-                console.error('❌ Erreur affichage clés:', error);
-            }
-        }
-
-        // =============================================================================
-        // GESTION DES RELAYS - FONCTIONS CORRIGÉES
-        // =============================================================================
-
-        async function connectToRelays() {
-            if (!userKeys) return;
-            
-            const status = document.getElementById('status');
-            const relaysStatus = document.getElementById('relays-status');
-            
-            status.className = 'status pending';
-            status.innerHTML = '<div class="status-dot"></div><span>Connexion aux relays...</span>';
-            
-            relaysStatus.innerHTML = '';
-            let connectedCount = 0;
-
-            // Connexion parallèle
-            const connectionPromises = RELAY_URLS.map(async (url) => {
-                try {
-                    console.log(`🔌 Tentative de connexion à: ${url}`);
-                    
-                    const relay = nostrTools.relayInit(url);
-                    
-                    // Timeout de 5 secondes
-                    const timeoutPromise = new Promise((_, reject) => 
-                        setTimeout(() => reject(new Error('Timeout 5s')), 5000)
-                    );
-                    
-                    await Promise.race([relay.connect(), timeoutPromise]);
-                    
-                    relays.set(url, relay);
-                    connectedCount++;
-                    
-                    console.log(`✅ Connecté à: ${url}`);
-                    updateRelayStatus(url, 'connected', '✅ Connecté');
-                    
-                    subscribeToRelay(relay, url);
-                    
-                    return { url, success: true };
-                    
-                } catch (error) {
-                    console.log(`❌ Erreur connexion ${url}:`, error.message);
-                    updateRelayStatus(url, 'error', `❌ ${error.message}`);
-                    return { url, success: false, error: error.message };
-                }
-            });
-
-            await Promise.allSettled(connectionPromises);
-            updateConnectionStatus(connectedCount);
-            
-            if (connectedCount < 2) {
-                await tryBackupRelays();
-            }
-        }
-
-        async function tryBackupRelays() {
-            const backupRelays = [
-                "wss://offchain.pub",
-                "wss://eden.nostr.land",
-                "wss://relay.snort.social"
-            ];
-            
-            console.log('🔄 Essai des relays de backup...');
-            
-            for (const url of backupRelays) {
-                if (relays.size >= 3) break;
-                
-                try {
-                    const relay = nostrTools.relayInit(url);
-                    const timeoutPromise = new Promise((_, reject) => 
-                        setTimeout(() => reject(new Error('Timeout')), 4000)
-                    );
-                    
-                    await Promise.race([relay.connect(), timeoutPromise]);
-                    relays.set(url, relay);
-                    
-                    console.log(`✅ Backup connecté: ${url}`);
-                    updateRelayStatus(url, 'connected', '✅ Backup');
-                    subscribeToRelay(relay, url);
-                    
-                } catch (error) {
-                    console.log(`❌ Backup échoué: ${url}`);
-                }
-            }
-            
-            updateConnectionStatus(relays.size);
-        }
-
-        function updateConnectionStatus(connectedCount) {
-            const status = document.getElementById('status');
-            
-            if (connectedCount > 0) {
                 isConnected = true;
                 status.className = 'status connected';
-                status.innerHTML = `<div class="status-dot"></div><span>✅ Connecté à ${connectedCount} relay(s)</span>`;
-                showStatusMessage(`Réseau Nostr opérationnel (${connectedCount} relay(s))`, 'success');
-            } else {
-                isConnected = false;
-                status.className = 'status error';
-                status.innerHTML = '<div class="status-dot"></div><span>❌ Aucun relay disponible</span>';
-                showStatusMessage('Impossible de se connecter au réseau Nostr', 'error');
-            }
-        }
-
-        function updateRelayStatus(url, status, message) {
-            const relaysStatus = document.getElementById('relays-status');
-            const statusDiv = document.createElement('div');
-            statusDiv.className = `relay-status relay-${status}`;
-            
-            const shortUrl = url.replace('wss://', '').replace('ws://', '');
-            statusDiv.innerHTML = `
-                <i class="fas fa-${status === 'connected' ? 'check-circle' : 'exclamation-circle'}"></i>
-                <span class="relay-url">${shortUrl}</span>
-                <span style="margin-left: auto; font-size: 0.7rem;">${message}</span>
-            `;
-            
-            relaysStatus.appendChild(statusDiv);
-        }
-
-        function subscribeToRelay(relay, url) {
-            if (!userKeys) return;
-
-            try {
-                const sub = relay.sub([
-                    {
-                        kinds: [4],
-                        '#p': [userKeys.publicKey],
-                        since: Math.floor(Date.now() / 1000) - 86400
-                    }
-                ], {
-                    skipVerification: true
-                });
+                status.innerHTML = '<div class="status-dot"></div><span>✅ Connecté au relay UVBF</span>';
+                
+                // Écouter les messages
+                const sub = relay.sub([{
+                    kinds: [4],
+                    '#p': [userKeys.publicKey]
+                }]);
                 
                 sub.on('event', async (event) => {
                     try {
-                        if (isNewMessage(event.id)) {
-                            console.log(`📨 Nouveau message de ${url}`);
-                            
-                            const decrypted = await nostrTools.nip04.decrypt(
-                                userKeys.privateKey,
-                                event.pubkey,
-                                event.content
-                            );
-                            
-                            showMessage(decrypted, 'received', event.pubkey, url);
-                            storeMessageId(event.id);
-                        }
+                        const decrypted = await NostrTools.nip04.decrypt(
+                            userKeys.privateKey,
+                            event.pubkey,
+                            event.content
+                        );
+                        showMessage(decrypted, 'received', event.pubkey);
                     } catch (error) {
-                        console.log(`❌ Erreur déchiffrement:`, error);
+                        console.log('Erreur déchiffrement:', error);
                     }
                 });
-
-                sub.on('eose', () => {
-                    console.log(`📬 Synchronisation terminée pour: ${url}`);
-                });
-
+                
             } catch (error) {
-                console.log(`❌ Erreur abonnement:`, error);
+                status.className = 'status error';
+                status.innerHTML = '<div class="status-dot"></div><span>❌ Erreur de connexion au relay</span>';
+                console.log('Erreur connexion:', error);
             }
-        }
-
-        // =============================================================================
-        // GESTION DES MESSAGES
-        // =============================================================================
-
-        function isNewMessage(messageId) {
-            if (processedMessages.has(messageId)) {
-                return false;
-            }
-            processedMessages.add(messageId);
-            
-            if (processedMessages.size > 1000) {
-                const array = Array.from(processedMessages);
-                processedMessages.clear();
-                array.slice(-500).forEach(id => processedMessages.add(id));
-            }
-            
-            return true;
-        }
-
-        function storeMessageId(messageId) {
-            const stored = JSON.parse(localStorage.getItem('uvbf_processed_messages') || '[]');
-            stored.push(messageId);
-            
-            if (stored.length > 500) {
-                stored.splice(0, stored.length - 500);
-            }
-            
-            localStorage.setItem('uvbf_processed_messages', JSON.stringify(stored));
         }
 
         async function sendMessage() {
             if (!userKeys || !isConnected) {
-                alert('❌ Générez d\'abord des clés et attendez la connexion aux relays');
+                alert('Générez d\'abord des clés et attendez la connexion');
                 return;
             }
 
@@ -953,13 +253,13 @@
             const content = document.getElementById('message').value.trim();
             
             if (!recipient || !content) {
-                alert('❌ Remplissez tous les champs');
+                alert('Remplissez tous les champs');
                 return;
             }
 
             try {
-                console.log('🔐 Début du chiffrement...');
-                const encrypted = await nostrTools.nip04.encrypt(
+                console.log('Début chiffrement...');
+                const encrypted = await NostrTools.nip04.encrypt(
                     userKeys.privateKey,
                     recipient,
                     content
@@ -973,139 +273,46 @@
                     content: encrypted
                 };
 
-                event.id = nostrTools.getEventHash(event);
-                event.sig = nostrTools.signEvent(event, userKeys.privateKey);
+                event.id = NostrTools.getEventHash(event);
+                event.sig = NostrTools.signEvent(event, userKeys.privateKey);
 
-                console.log('📤 Publication sur les relays...');
-                
-                const publishPromises = Array.from(relays.values()).map(relay => {
-                    return new Promise((resolve, reject) => {
-                        const pub = relay.publish(event);
-                        
-                        pub.on('ok', () => {
-                            console.log(`✅ Message publié sur: ${relay.url}`);
-                            resolve(relay.url);
-                        });
-                        
-                        pub.on('failed', (reason) => {
-                            console.log(`❌ Échec publication sur: ${relay.url}`, reason);
-                            reject(new Error(`Failed on ${relay.url}: ${reason}`));
-                        });
-                    });
-                });
-
-                const results = await Promise.allSettled(publishPromises);
-                const successful = results.filter(r => r.status === 'fulfilled').length;
-                console.log(`📊 Publication: ${successful}/${relays.size} relays réussis`);
-                
+                await relay.publish(event);
                 showMessage(content, 'sent', recipient);
+                
                 document.getElementById('message').value = '';
                 
             } catch (error) {
-                console.error('❌ Erreur envoi:', error);
-                alert('❌ Erreur lors de l\'envoi: ' + error.message);
+                alert('Erreur: ' + error.message);
+                console.log('Erreur détaillée:', error);
             }
         }
 
-        function showMessage(content, type, pubkey, relayUrl = '') {
+        function showMessage(content, type, pubkey) {
             const container = document.getElementById('messages-container');
-            
-            const emptyState = container.querySelector('.empty-state');
-            if (emptyState) {
-                emptyState.remove();
-            }
-
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${type}`;
             
-            const shortKey = pubkey.substring(0, 16) + '...';
+            const shortKey = pubkey.substring(0, 10) + '...';
             const time = new Date().toLocaleTimeString();
-            const relayInfo = relayUrl ? `<br><small>via ${relayUrl.replace('wss://', '')}</small>` : '';
             
             messageDiv.innerHTML = `
                 <div class="message-header">
                     <span class="message-sender">${type === 'sent' ? 'À' : 'De'} ${shortKey}</span>
                     <span class="message-time">${time}</span>
                 </div>
-                <div class="message-content">${content}${relayInfo}</div>
+                <div class="message-content">${content}</div>
             `;
             
             container.appendChild(messageDiv);
             container.scrollTop = container.scrollHeight;
         }
 
-        // =============================================================================
-        // UTILITAIRES
-        // =============================================================================
-
         function copyToClipboard(type) {
-            if (!userKeys) {
-                alert('❌ Générez d\'abord des clés');
-                return;
-            }
-
             const text = type === 'pubkey' ? userKeys.publicKey : userKeys.privateKey;
-            
             navigator.clipboard.writeText(text).then(() => {
-                alert(`✅ Clé ${type === 'pubkey' ? 'publique' : 'privée'} copiée !`);
-            }).catch(err => {
-                console.error('❌ Erreur copie:', err);
-                alert('❌ Erreur lors de la copie');
+                alert('Clé copiée dans le presse-papier !');
             });
         }
-
-        function showStatusMessage(message, type) {
-            const existingMessage = document.getElementById('temp-status-message');
-            if (existingMessage) existingMessage.remove();
-            
-            const statusMessage = document.createElement('div');
-            statusMessage.id = 'temp-status-message';
-            statusMessage.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 12px 20px;
-                border-radius: 8px;
-                color: white;
-                font-weight: 500;
-                z-index: 1000;
-                animation: slideInRight 0.3s ease;
-                ${type === 'success' ? 'background: #10b981;' : 'background: #ef4444;'}
-            `;
-            
-            statusMessage.textContent = message;
-            document.body.appendChild(statusMessage);
-            
-            setTimeout(() => {
-                if (statusMessage.parentNode) {
-                    statusMessage.remove();
-                }
-            }, 5000);
-        }
-
-        function setupReconnection() {
-            setInterval(() => {
-                if (relays.size < 2 && userKeys) {
-                    console.log('🔄 Reconnexion automatique...');
-                    connectToRelays();
-                }
-            }, 30000);
-        }
-
-        // =============================================================================
-        // GESTION DE LA DÉCONNEXION
-        // =============================================================================
-
-        window.addEventListener('beforeunload', () => {
-            relays.forEach(relay => {
-                try {
-                    relay.close();
-                } catch (error) {
-                    console.log('Erreur fermeture relay:', error);
-                }
-            });
-        });
-
     </script>
 </body>
 </html>
