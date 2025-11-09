@@ -270,8 +270,8 @@ curl http://localhost:3000
 
 #### ❌ Erreur "crypto.subtle is undefined"
 
-. Cause : HTTP au lieu de HTTPS
-. Solution : Utiliser Cloudflare Tunnel ou certificat SSL
+- Cause : HTTP au lieu de HTTPS
+- Solution : Utiliser Cloudflare Tunnel ou certificat SSL
 
 #### ❌ Port déjà utilisé
 
@@ -313,18 +313,18 @@ echo "=== DIAGNOSTIC TERMINÉ ==="
 
 ### Mesures Implémentées
 
-. ✅ Chiffrement de bout en bout (NIP-04)
-. ✅ Génération sécurisée de clés
-. ✅ Validation des signatures
-. ✅ Isolation des services
-. ✅ Certificats SSL/TLS
+- ✅ Chiffrement de bout en bout (NIP-04)
+- ✅ Génération sécurisée de clés
+- ✅ Validation des signatures
+- ✅ Isolation des services
+- ✅ Certificats SSL/TLS
 
 ### Bonnes Pratiques
 
-.🔑 Ne jamais partager sa clé privée
-. 🔄 Maintenir les services à jour
-. 📋 Sauvegarder régulièrement
-. 👁️ Monitorer les logs
+- 🔑 Ne jamais partager sa clé privée
+- 🔄 Maintenir les services à jour
+- 📋 Sauvegarder régulièrement
+- 👁️ Monitorer les logs
 
 ## 📈 Monitoring et Maintenance
 
@@ -361,11 +361,11 @@ sudo systemctl restart uvbf-web-interface
 
 ### Technologies Utilisées
 
-. Relay : nostr-rs-relay (Rust)
-. Frontend : HTML5, CSS3, JavaScript + nostr-tools
-. Proxy : Nginx
-. Tunnel : Cloudflare Tunnel
-. Sécurité : Chiffrement NIP-04
+- Relay : nostr-rs-relay (Rust)
+- Frontend : HTML5, CSS3, JavaScript + nostr-tools
+- Proxy : Nginx
+- Tunnel : Cloudflare Tunnel
+- Sécurité : Chiffrement NIP-04
 
 ### Structure Technique
 
