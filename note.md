@@ -1,5 +1,29 @@
-# Ce que l'on peut dire en generale sur le projet 
+# 📊 RAPPORT D'ÉTAT DU PROJET UVBF NOSTR
 
-De facon generale, le projet avance. Nous avons creer ce qui nous servira de page web pour la generation de cle public et prive pour l'envoie des messages.
-Nous avons egalement configurer un grand nombre d'outils pour la communication des messages ( Nginx [ Qui nous sert de server pour notre relay local pour les test] , 
-le relay en lui meme [ le relay nostr disponible sur le depot officiel ], cloudflar pour avoir un nom de domaine en ligne pour palier au fonctionnement en local )
+## 🎯 ÉTAT GÉNÉRAL DU DÉVELOPPEMENT
+
+### ✅ **PROGRÈS ACCOMPLIS**
+
+#### **1. Architecture Technique Solide**
+- **Frontend Reactif** : Interface utilisateur moderne et responsive complètement fonctionnelle
+- **Intégration Nostr** : Connexion opérationnelle au protocole décentralisé Nostr
+- **Chiffrement Natif** : Implémentation réussie du chiffrement de bout en bout via NIP-04
+- **Gestion des Clés** : Génération et stockage sécurisé des paires de clés cryptographiques
+
+#### **2. Fonctionnalités Implémentées**
+- ✅ Génération de clés publique/privée
+- ✅ Connexion multi-relays avec fallback automatique
+- ✅ Envoi de messages chiffrés de bout en bout
+- ✅ Réception et déchiffrement des messages
+- ✅ Interface utilisateur intuitive avec feedback en temps réel
+- ✅ Gestion d'erreurs robuste
+
+#### **3. Infrastructure Développement**
+- **Environnement Local** : Serveur de développement opérationnel
+- **Versioning** : Dépôt Git structuré et documenté
+- **Déploiement Préparé** : Configuration Vercel/GitHub Pages prête
+
+---
+
+
+
