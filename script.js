@@ -1,4 +1,3 @@
- // Le code JavaScript reste exactement le même que précédemment
         // Vérifier que nostr-tools est chargé
         console.log('NostrTools:', typeof NostrTools);
         
