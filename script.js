@@ -1,108 +1,174 @@
-// Éléments DOM
-        const generateKeysBtn = document.getElementById('generate-keys');
-        const authSection = document.getElementById('auth-section');
-        const chatSection = document.getElementById('chat-section');
-        const keysDisplay = document.getElementById('keys-display');
-        const pubkeySpan = document.getElementById('pubkey');
-        const privkeySpan = document.getElementById('privkey');
-        const sendBtn = document.getElementById('send');
-        const messagesDiv = document.getElementById('messages');
-        const statusDot = document.getElementById('status-dot');
-        const statusText = document.getElementById('status-text');
-        const userInfo = document.getElementById('user-info');
-        const userPubkeyShort = document.getElementById('user-pubkey-short');
-        const newChatBtn = document.getElementById('new-chat-btn');
-
-        let userPrivateKey = null;
-        let userPublicKey = null;
+// Le code JavaScript reste exactement le même que précédemment
+        // Vérifier que nostr-tools est chargé
+        console.log('NostrTools:', typeof NostrTools);
+        
+        let userKeys = null;
         let relay = null;
+        let isConnected = false;
 
-        // Mise à jour du statut de connexion
-        function updateConnectionStatus(connected) {
-            if (connected) {
-                statusDot.className = 'status-dot status-connected';
-                statusText.textContent = 'Connecté';
-            } else {
-                statusDot.className = 'status-dot status-disconnected';
-                statusText.textContent = 'Déconnecté';
+        // Charger au démarrage
+        window.addEventListener('load', function() {
+            console.log('Page chargée, vérification nostr-tools...');
+            if (typeof NostrTools === 'undefined') {
+                alert('Erreur: nostr-tools non chargé. Vérifiez la connexion internet.');
+                return;
+            }
+            loadKeys();
+        });
+
+        function loadKeys() {
+            const saved = localStorage.getItem('uvbf_nostr_keys');
+            if (saved) {
+                try {
+                    userKeys = JSON.parse(saved);
+                    showKeys();
+                    connectToRelay();
+                } catch (e) {
+                    console.log('Pas de clés sauvegardées ou erreur de parsing');
+                }
             }
         }
 
-        // Génération des clés
-        generateKeysBtn.addEventListener('click', () => {
-            const privateKey = NostrTools.generatePrivateKey();
-            const publicKey = NostrTools.getPublicKey(privateKey);
-            
-            userPrivateKey = privateKey;
-            userPublicKey = publicKey;
-            
-            pubkeySpan.textContent = publicKey;
-            privkeySpan.textContent = privateKey;
-            
-            keysDisplay.style.display = 'block';
-            authSection.style.display = 'none';
-            chatSection.style.display = 'block';
-            userInfo.style.display = 'block';
-            userPubkeyShort.textContent = publicKey.substring(0, 16) + '...';
-            
-            // Simulation de connexion au relay
-            setTimeout(() => {
-                updateConnectionStatus(true);
-            }, 1500);
-        });
+        function saveKeys(keys) {
+            localStorage.setItem('uvbf_nostr_keys', JSON.stringify(keys));
+        }
 
-        // Nouvelle conversation
-        newChatBtn.addEventListener('click', () => {
-            document.getElementById('recipient').value = '';
-            document.getElementById('message').value = '';
-        });
-
-        // Envoi de message (simulation pour la démo)
-        sendBtn.addEventListener('click', () => {
-            const recipient = document.getElementById('recipient').value;
-            const message = document.getElementById('message').value;
-            
-            if (!recipient || !message) {
-                alert('Veuillez remplir tous les champs');
+        function generateKeys() {
+            if (typeof NostrTools === 'undefined') {
+                alert('nostr-tools non chargé. Rafraîchissez la page.');
                 return;
             }
             
-            // Simulation d'envoi
+            const privateKey = NostrTools.generatePrivateKey();
+            const publicKey = NostrTools.getPublicKey(privateKey);
+            
+            userKeys = { privateKey, publicKey };
+            saveKeys(userKeys);
+            showKeys();
+            connectToRelay();
+        }
+
+        function showKeys() {
+            document.getElementById('pubkey-display').textContent = userKeys.publicKey;
+            document.getElementById('privkey-display').textContent = userKeys.privateKey;
+            
+            document.getElementById('keys-section').style.display = 'block';
+            document.getElementById('message-section').style.display = 'block';
+            document.getElementById('messages-section').style.display = 'block';
+            
+            // Supprimer l'état vide des messages
+            const emptyState = document.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.style.display = 'none';
+            }
+        }
+
+        async function connectToRelay() {
+            const status = document.getElementById('status');
+            try {
+                status.className = 'status pending';
+                status.innerHTML = '<div class="status-dot"></div><span>Connexion au relay...</span>';
+                
+                relay = NostrTools.relayInit('ws://localhost:8080');
+                await relay.connect();
+                
+                isConnected = true;
+                status.className = 'status connected';
+                status.innerHTML = '<div class="status-dot"></div><span>✅ Connecté au relay UVBF</span>';
+                
+                // Écouter les messages
+                const sub = relay.sub([{
+                    kinds: [4],
+                    '#p': [userKeys.publicKey]
+                }]);
+                
+                sub.on('event', async (event) => {
+                    try {
+                        const decrypted = await NostrTools.nip04.decrypt(
+                            userKeys.privateKey,
+                            event.pubkey,
+                            event.content
+                        );
+                        showMessage(decrypted, 'received', event.pubkey);
+                    } catch (error) {
+                        console.log('Erreur déchiffrement:', error);
+                    }
+                });
+                
+            } catch (error) {
+                status.className = 'status error';
+                status.innerHTML = '<div class="status-dot"></div><span>❌ Erreur de connexion au relay</span>';
+                console.log('Erreur connexion:', error);
+            }
+        }
+
+        async function sendMessage() {
+            if (!userKeys || !isConnected) {
+                alert('Générez d\'abord des clés et attendez la connexion');
+                return;
+            }
+
+            const recipient = document.getElementById('recipient').value.trim();
+            const content = document.getElementById('message').value.trim();
+            
+            if (!recipient || !content) {
+                alert('Remplissez tous les champs');
+                return;
+            }
+
+            try {
+                console.log('Début chiffrement...');
+                const encrypted = await NostrTools.nip04.encrypt(
+                    userKeys.privateKey,
+                    recipient,
+                    content
+                );
+
+                const event = {
+                    kind: 4,
+                    pubkey: userKeys.publicKey,
+                    created_at: Math.floor(Date.now() / 1000),
+                    tags: [['p', recipient]],
+                    content: encrypted
+                };
+
+                event.id = NostrTools.getEventHash(event);
+                event.sig = NostrTools.signEvent(event, userKeys.privateKey);
+
+                await relay.publish(event);
+                showMessage(content, 'sent', recipient);
+                
+                document.getElementById('message').value = '';
+                
+            } catch (error) {
+                alert('Erreur: ' + error.message);
+                console.log('Erreur détaillée:', error);
+            }
+        }
+
+        function showMessage(content, type, pubkey) {
+            const container = document.getElementById('messages-container');
             const messageDiv = document.createElement('div');
-            messageDiv.className = 'message sent';
+            messageDiv.className = `message ${type}`;
+            
+            const shortKey = pubkey.substring(0, 10) + '...';
+            const time = new Date().toLocaleTimeString();
+            
             messageDiv.innerHTML = `
                 <div class="message-header">
-                    <div class="message-sender">Vous</div>
-                    <div class="message-time">${new Date().toLocaleTimeString()}</div>
+                    <span class="message-sender">${type === 'sent' ? 'À' : 'De'} ${shortKey}</span>
+                    <span class="message-time">${time}</span>
                 </div>
-                <div class="message-content">${message}</div>
+                <div class="message-content">${content}</div>
             `;
             
-            // Supprimer l'état vide s'il existe
-            const emptyState = messagesDiv.querySelector('.empty-state');
-            if (emptyState) {
-                emptyState.remove();
-            }
-            
-            messagesDiv.prepend(messageDiv);
-            
-            // Réinitialisation du champ de message
-            document.getElementById('message').value = '';
-            
-            // Simulation de réponse
-            setTimeout(() => {
-                const responseDiv = document.createElement('div');
-                responseDiv.className = 'message received';
-                responseDiv.innerHTML = `
-                    <div class="message-header">
-                        <div class="message-sender">${recipient.substring(0, 16)}...</div>
-                        <div class="message-time">${new Date().toLocaleTimeString()}</div>
-                    </div>
-                    <div class="message-content">Merci pour votre message! Ceci est une réponse automatique de démonstration.</div>
-                `;
-                messagesDiv.prepend(responseDiv);
-            }, 2000);
-        });
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
 
-        // Initialisation
-        updateConnectionStatus(false);
+        function copyToClipboard(type) {
+            const text = type === 'pubkey' ? userKeys.publicKey : userKeys.privateKey;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Clé copiée dans le presse-papier !');
+            });
+        }
