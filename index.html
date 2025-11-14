@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UVBF Nostr - Messagerie Sécurisée</title>
+    
     <script src="https://cdn.jsdelivr.net/npm/nostr-tools@1.12.1/lib/nostr.bundle.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+   
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -44,34 +47,86 @@
                             <h2 class="card-title">Identité</h2>
                         </div>
                         
-                        <button class="btn btn-primary" onclick="generateKeys()" style="width: 100%;">
+                        <!-- Bouton corrigé avec les IDs pour le spinner -->
+                        <button class="btn btn-primary" onclick="generateKeys()" style="width: 100%;" id="generate-btn">
                             <i class="fas fa-plus"></i>
-                            Générer mes identifiants
+                            <span id="btn-text">Générer mes identifiants</span>
+                            <div id="btn-spinner" style="display: none;">
+                                <i class="fas fa-spinner fa-spin"></i> Génération...
+                            </div>
                         </button>
 
                         <div id="keys-section" style="display: none;">
+                            <!-- Section Clé Publique -->
                             <div class="key-group">
                                 <div class="key-label">
                                     <i class="fas fa-share-alt"></i>
                                     Clé Publique
                                 </div>
                                 <div class="key-value" id="pubkey-display"></div>
-                                <button class="btn btn-outline" onclick="copyToClipboard('pubkey')" style="width: 100%;">
-                                    <i class="fas fa-copy"></i>
-                                    Copier la clé publique
-                                </button>
+                                <div class="qr-buttons">
+                                    <button class="btn btn-outline" onclick="copyToClipboard('pubkey')" style="flex: 1;">
+                                        <i class="fas fa-copy"></i>
+                                        Copier
+                                    </button>
+                                    <button class="btn btn-primary" onclick="generateQRCode('pubkey')" style="flex: 1;">
+                                        <i class="fas fa-qrcode"></i>
+                                        QR Code
+                                    </button>
+                                </div>
+                                
+                                <!-- QR Code Public -->
+                                <div class="qr-container" id="pubkey-qr-container">
+                                    <div class="qr-label">
+                                        <i class="fas fa-qrcode"></i>
+                                        QR Code - Clé Publique
+                                    </div>
+                                    <div class="qr-code" id="pubkey-qr"></div>
+                                    <div style="font-size: 0.8rem; color: var(--gray); margin-top: 0.5rem;">
+                                        Scannez pour partager votre clé publique
+                                    </div>
+                                    <button class="btn btn-outline download-btn" onclick="downloadQRCode()">
+                                        <i class="fas fa-download"></i>
+                                        Télécharger QR Code
+                                    </button>
+                                </div>
                             </div>
 
+                            <!-- Section Clé Privée -->
                             <div class="key-group">
                                 <div class="key-label">
                                     <i class="fas fa-lock"></i>
                                     Clé Privée
                                 </div>
                                 <div class="key-value" id="privkey-display"></div>
-                                <button class="btn btn-outline" onclick="copyToClipboard('privkey')" style="width: 100%;">
-                                    <i class="fas fa-copy"></i>
-                                    Copier la clé privée
-                                </button>
+                                <div class="qr-buttons">
+                                    <button class="btn btn-outline" onclick="copyToClipboard('privkey')" style="flex: 1;">
+                                        <i class="fas fa-copy"></i>
+                                        Copier
+                                    </button>
+                                    <button class="btn btn-warning" onclick="generateQRCode('privkey')" style="flex: 1;">
+                                        <i class="fas fa-qrcode"></i>
+                                        QR Code
+                                    </button>
+                                </div>
+                                
+                                <!-- QR Code Privé -->
+                                <div class="qr-container" id="privkey-qr-container">
+                                    <div class="qr-label">
+                                        <i class="fas fa-qrcode"></i>
+                                        QR Code - Clé Privée
+                                    </div>
+                                    <div class="qr-code" id="privkey-qr"></div>
+                                    <div class="qr-warning">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        ⚠️ NE partagez JAMAIS ce QR Code !
+                                    </div>
+                                    <button class="btn btn-outline download-btn" onclick="downloadQRCode()">
+                                        <i class="fas fa-download"></i>
+                                        Télécharger QR Code
+                                    </button>
+                                </div>
+                                
                                 <div class="key-warning">
                                     <i class="fas fa-exclamation-triangle"></i>
                                     Ne partagez JAMAIS cette clé !
@@ -139,5 +194,7 @@
     </div>
 
     <script src="script.js"></script>
+    <!-- Script de secours pour QR Code -->
+
 </body>
 </html>

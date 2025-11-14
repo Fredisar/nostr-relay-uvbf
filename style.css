@@ -431,3 +431,120 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+/* QR Code Styles */
+.qr-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.qr-container {
+    display: none;
+    text-align: center;
+    padding: 1rem;
+    background: white;
+    border-radius: 12px;
+    border: 2px solid var(--gray-light);
+    margin-top: 1rem;
+}
+
+.qr-code {
+    margin: 0 auto;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.qr-label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.qr-warning {
+    color: var(--error);
+    font-size: 0.8rem;
+    text-align: center;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.download-btn {
+    margin-top: 1rem;
+    width: 100%;
+}
+
+/* Animation pour l'apparition des QR Codes */
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.qr-container.show {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+/* Status Messages */
+.status-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    z-index: 1000;
+    animation: slideInRight 0.3s ease;
+}
+
+.status-success {
+    background: var(--success);
+}
+
+.status-error {
+    background: var(--error);
+}
+
+.status-warning {
+    background: var(--warning);
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Bouton Warning */
+.btn-warning {
+    background: var(--warning);
+    color: white;
+}
+
+.btn-warning:hover {
+    background: var(--warning);
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+/* Responsive QR Codes */
+@media (max-width: 768px) {
+    .qr-buttons {
+        flex-direction: column;
+    }
+}
