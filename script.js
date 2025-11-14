@@ -113,8 +113,24 @@ function showKeys() {
     if (!userKeys) return;
 
     try {
+        // Clé publique (toujours visible)
         document.getElementById('pubkey-display').textContent = userKeys.publicKey;
-        document.getElementById('privkey-display').textContent = userKeys.privateKey;
+        
+        // Clé privée (masquée par défaut)
+        const privkeyDisplay = document.getElementById('privkey-display');
+        privkeyDisplay.innerHTML = `
+            <div class="hidden-key-content">
+                <div class="hidden-key-mask">••••••••••••••••••••••••••••••••</div>
+                <button class="btn btn-sm btn-outline reveal-btn" onclick="togglePrivateKey()">
+                    <i class="fas fa-eye"></i>
+                    Afficher
+                </button>
+            </div>
+            <div class="security-warning" style="display: none;">
+                <i class="fas fa-exclamation-triangle"></i>
+                Clé privée visible - Fermez cette fenêtre après utilisation
+            </div>
+        `;
         
         document.getElementById('keys-section').style.display = 'block';
         document.getElementById('message-section').style.display = 'block';
@@ -447,3 +463,273 @@ function showStatusMessage(message, type) {
     }, 5000);
 }
 
+// Variables pour la gestion de la clé privée
+let isPrivateKeyVisible = false;
+let autoHideTimeout = null;
+
+// Version sécurisée avec modal de confirmation
+function togglePrivateKey() {
+    if (!isPrivateKeyVisible) {
+        showSecurityModal();
+    } else {
+        hidePrivateKey();
+    }
+}
+
+function showSecurityModal() {
+    // Créer le modal de sécurité
+    const modalHTML = `
+        <div class="security-overlay" id="security-modal">
+            <div class="security-modal">
+                <div style="font-size: 3rem; color: var(--error); margin-bottom: 1rem;">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>⚠️ AVERTISSEMENT DE SÉCURITÉ</h3>
+                <p style="margin-bottom: 1.5rem; color: var(--dark);">
+                    Vous êtes sur le point d'afficher votre clé privée.
+                </p>
+                
+                <div class="security-checklist">
+                    <strong>Avant de continuer, assurez-vous que :</strong>
+                    <ul style="margin-top: 1rem; padding-left: 1rem;">
+                        <li><i class="fas fa-check"></i> Personne ne regarde votre écran</li>
+                        <li><i class="fas fa-check"></i> Vous n'êtes pas en public</li>
+                        <li><i class="fas fa-check"></i> Aucune application malveillante n'est en cours d'exécution</li>
+                        <li><i class="fas fa-check"></i> Vous comprenez les risques</li>
+                    </ul>
+                </div>
+                
+                <p style="color: var(--error); font-weight: 600; margin: 1rem 0;">
+                    ⚠️ Votre clé privée donne un accès COMPLET à votre identité !
+                </p>
+                
+                <div class="modal-buttons">
+                    <button class="btn btn-secondary" onclick="closeSecurityModal()">
+                        <i class="fas fa-times"></i>
+                        Annuler
+                    </button>
+                    <button class="btn btn-danger" onclick="confirmShowPrivateKey()">
+                        <i class="fas fa-eye"></i>
+                        Je comprends, afficher la clé
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+function closeSecurityModal() {
+    const modal = document.getElementById('security-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+function confirmShowPrivateKey() {
+    closeSecurityModal();
+    showPrivateKey();
+}
+
+function showPrivateKey() {
+    const privkeyDisplay = document.getElementById('privkey-display');
+    const hiddenContent = privkeyDisplay.querySelector('.hidden-key-content');
+    
+    // Masquer le contenu initial
+    hiddenContent.style.display = 'none';
+    
+    // Afficher la clé privée
+    const keyElement = document.createElement('div');
+    keyElement.className = 'private-key-visible';
+    keyElement.textContent = userKeys.privateKey;
+    
+    // Créer le bouton pour masquer
+    const hideButton = document.createElement('button');
+    hideButton.className = 'btn btn-sm hide-btn';
+    hideButton.innerHTML = '<i class="fas fa-eye-slash"></i> Masquer';
+    hideButton.onclick = hidePrivateKey;
+    hideButton.style.marginTop = '1rem';
+    hideButton.style.width = '100%';
+    
+    // Afficher l'avertissement de sécurité
+    const warning = privkeyDisplay.querySelector('.security-warning');
+    warning.style.display = 'flex';
+    
+    // Vider et reconstruire l'affichage
+    privkeyDisplay.innerHTML = '';
+    privkeyDisplay.appendChild(keyElement);
+    privkeyDisplay.appendChild(hideButton);
+    privkeyDisplay.appendChild(warning);
+    
+    isPrivateKeyVisible = true;
+    
+    // Auto-masquage après 2 minutes pour sécurité
+    autoHideTimeout = setTimeout(() => {
+        if (isPrivateKeyVisible) {
+            hidePrivateKey();
+            showStatusMessage('🔒 Clé privée automatiquement masquée pour sécurité', 'warning');
+        }
+    }, 120000); // 2 minutes
+    
+    // Tracking d'activité pour détection d'inactivité
+    document.addEventListener('mousemove', resetAutoHide);
+    document.addEventListener('keypress', resetAutoHide);
+}
+
+function hidePrivateKey() {
+    const privkeyDisplay = document.getElementById('privkey-display');
+    
+    // Reconstruire l'affichage masqué
+    privkeyDisplay.innerHTML = `
+        <div class="hidden-key-content">
+            <div class="hidden-key-mask">••••••••••••••••••••••••••••••••</div>
+            <button class="btn btn-sm btn-outline reveal-btn" onclick="togglePrivateKey()">
+                <i class="fas fa-eye"></i>
+                Afficher
+            </button>
+        </div>
+        <div class="security-warning" style="display: none;">
+            <i class="fas fa-exclamation-triangle"></i>
+            Clé privée visible - Fermez cette fenêtre après utilisation
+        </div>
+    `;
+    
+    isPrivateKeyVisible = false;
+    
+    // Nettoyer le timeout d'auto-masquage
+    if (autoHideTimeout) {
+        clearTimeout(autoHideTimeout);
+        autoHideTimeout = null;
+    }
+    
+    // Retirer les écouteurs d'événements
+    document.removeEventListener('mousemove', resetAutoHide);
+    document.removeEventListener('keypress', resetAutoHide);
+    
+    showStatusMessage('✅ Clé privée masquée', 'success');
+}
+
+function resetAutoHide() {
+    // Réinitialiser le timeout d'auto-masquage à chaque activité utilisateur
+    if (autoHideTimeout) {
+        clearTimeout(autoHideTimeout);
+        autoHideTimeout = setTimeout(() => {
+            if (isPrivateKeyVisible) {
+                hidePrivateKey();
+                showStatusMessage('🔒 Clé privée automatiquement masquée pour sécurité', 'warning');
+            }
+        }, 120000);
+    }
+}
+
+// Fonction de copie sécurisée pour la clé privée
+function copyPrivateKeyToClipboard() {
+    if (!userKeys) {
+        alert('❌ Générez d\'abord des clés');
+        return;
+    }
+
+    const confirmCopy = confirm(
+        "⚠️ COPIE DE LA CLÉ PRIVÉE ⚠️\n\n" +
+        "Vous êtes sur le point de copier votre clé privée dans le presse-papiers.\n\n" +
+        "✓ Ne la collez que dans des applications de confiance\n" +
+        "✓ Effacez le presse-papiers après utilisation\n" +
+        "✓ Ne la sauvegardez pas en clair\n\n" +
+        "Voulez-vous continuer ?"
+    );
+    
+    if (!confirmCopy) {
+        return;
+    }
+
+    navigator.clipboard.writeText(userKeys.privateKey).then(() => {
+        showStatusMessage('✅ Clé privée copiée ⚠️ Soyez extrêmement prudent !', 'warning');
+        
+        // Avertissement supplémentaire après 5 secondes
+        setTimeout(() => {
+            showStatusMessage('🔒 Pensez à vider votre presse-papiers !', 'warning');
+        }, 5000);
+    }).catch(err => {
+        console.error('❌ Erreur copie:', err);
+        alert('❌ Erreur lors de la copie');
+    });
+}
+
+// Fonction QR Code sécurisée pour clé privée
+function generatePrivateKeyQRCode() {
+    if (!userKeys) {
+        alert('❌ Veuillez d\'abord générer des clés');
+        return;
+    }
+
+    const confirmQR = confirm(
+        "⚠️ GÉNÉRATION QR CODE PRIVÉ ⚠️\n\n" +
+        "Vous allez générer un QR Code de votre clé privée.\n\n" +
+        "✓ Ne le scannez que avec des applications de confiance\n" +
+        "✓ Ne le partagez JAMAIS\n" +
+        "✓ Supprimez-le après utilisation\n\n" +
+        "Voulez-vous continuer ?"
+    );
+    
+    if (!confirmQR) {
+        return;
+    }
+
+    generateQRCode('privkey');
+}
+
+// Fonction de téléchargement sécurisée
+function downloadPrivateKeyQRCode() {
+    if (!currentQRCode || !currentQRCode.includes('privkey')) {
+        alert('❌ Aucun QR Code de clé privée affiché');
+        return;
+    }
+    
+    const confirmDownload = confirm(
+        "⚠️ TÉLÉCHARGEMENT QR CODE PRIVÉ ⚠️\n\n" +
+        "Vous allez télécharger un QR Code contenant votre clé privée.\n\n" +
+        "✓ Stockez-le dans un endroit sécurisé\n" +
+        "✓ Chiffrez le fichier si possible\n" +
+        "✓ Ne l'envoyez jamais par email\n\n" +
+        "Voulez-vous continuer ?"
+    );
+    
+    if (!confirmDownload) {
+        return;
+    }
+
+    const qrCanvas = document.querySelector('#privkey-qr-container canvas');
+    if (!qrCanvas) {
+        alert('❌ Impossible de trouver le QR Code à télécharger');
+        return;
+    }
+    
+    try {
+        const link = document.createElement('a');
+        link.download = `nostr-private-key-${new Date().getTime()}.png`;
+        link.href = qrCanvas.toDataURL('image/png');
+        link.click();
+        
+        showStatusMessage('✅ QR Code privé téléchargé ⚠️ Stockez-le en sécurité !', 'warning');
+    } catch (error) {
+        console.error('❌ Erreur téléchargement QR Code:', error);
+        alert('❌ Erreur lors du téléchargement');
+    }
+}
+
+// S'assurer que la clé privée est masquée au chargement
+window.addEventListener('load', function() {
+    // Masquer automatiquement la clé privée si elle était visible
+    if (isPrivateKeyVisible) {
+        hidePrivateKey();
+    }
+});
+
+// Masquer la clé privée quand la page perd le focus (changement d'onglet)
+window.addEventListener('blur', function() {
+    if (isPrivateKeyVisible) {
+        hidePrivateKey();
+        showStatusMessage('🔒 Clé privée masquée (changement d\'onglet détecté)', 'warning');
+    }
+});
